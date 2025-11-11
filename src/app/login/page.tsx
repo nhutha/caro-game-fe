@@ -2,27 +2,55 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@apollo/client/react';
+import { SIGN_IN_USER } from '../../lib/graphql/mutations';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface SignInResponse {
+  signInUser: {
+    accessToken: string;
+  };
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const router = useRouter();
+  const { login } = useAuth();
+  
+  const [signInUser, { loading: isLoading }] = useMutation<SignInResponse>(SIGN_IN_USER, {
+    onCompleted: (data: SignInResponse) => {
+      if (data.signInUser.accessToken) {
+        login(data.signInUser.accessToken);
+        router.push('/'); // Redirect to home page after successful login
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Login error:', error);
+      setError('Invalid email or password. Please try again.');
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
     try {
-      console.log('Login attempt:', { email, password });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Login successful');
+      await signInUser({
+        variables: {
+          input: {
+            email,
+            password
+          }
+        }
+      });
     } catch (err) {
-      setError('Invalid email or password. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Error is handled in onError callback
+      console.error('Login submission error:', err);
     }
   };
 
@@ -153,7 +181,7 @@ export default function LoginPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
                   Sign up here
                 </Link>

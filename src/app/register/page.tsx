@@ -2,6 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@apollo/client/react';
+import { SIGN_UP_USER } from '../../lib/graphql/mutations';
+import { useAuth } from '../../contexts/AuthContext';
+
+interface SignUpResponse {
+  signUpUser: {
+    accessToken: string;
+    user: {
+      id: string;
+      email: string;
+      username: string;
+    };
+  };
+}
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -12,8 +27,23 @@ export default function RegisterPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const router = useRouter();
+  const { login } = useAuth();
+  
+  const [signUpUser, { loading: isLoading }] = useMutation<SignUpResponse>(SIGN_UP_USER, {
+    onCompleted: (data: SignUpResponse) => {
+      if (data.signUpUser.accessToken) {
+        login(data.signUpUser.accessToken);
+        router.push('/'); // Redirect to home page after successful registration
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Registration error:', error);
+      setError('Registration failed. Please try again.');
+    }
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -24,36 +54,32 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
-      setIsLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
-      setIsLoading(false);
       return;
     }
 
     try {
-      // TODO: Implement actual registration logic here
-      console.log('Registration attempt:', formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For now, just log success - replace with actual authentication
-      console.log('Registration successful');
-      
+      await signUpUser({
+        variables: {
+          input: {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+          }
+        }
+      });
     } catch (err) {
-      setError('Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Error is handled in onError callback
+      console.error('Registration submission error:', err);
     }
   };
 
@@ -88,15 +114,15 @@ export default function RegisterPage() {
             )}
 
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Username
               </label>
               <div className="mt-1">
                 <input
-                  id="name"
-                  name="name"
+                  id="username"
+                  name="username"
                   type="text"
-                  autoComplete="name"
+                  autoComplete="username"
                   required
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   placeholder="Enter your username"
