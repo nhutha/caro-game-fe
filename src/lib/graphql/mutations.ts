@@ -30,6 +30,22 @@ export const FORGOT_PASSWORD = gql`
   }
 `;
 
+export const CREATE_ROOM = gql`
+  mutation CreateRoom($input: CreateRoomInput!) {
+    createRoom(input: $input) {
+      room {
+        id
+        name
+        master {
+          id
+          username
+          email
+        }
+      }
+    }
+  }
+`;
+
 export const GET_CURRENT_USER = gql`
   query GetCurrentUser {
     currentUser {
@@ -37,6 +53,20 @@ export const GET_CURRENT_USER = gql`
       email
       username
       createdAt
+    }
+  }
+`;
+
+export const GAME_UPDATED_SUBSCRIPTION = gql`
+  subscription GameUpdated($gameId: ID!) {
+    gameUpdated(gameId: $gameId) {
+      id
+      status
+      board
+      currentPlayer
+      winner
+      createdAt
+      updatedAt
     }
   }
 `;
