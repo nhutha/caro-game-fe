@@ -24,6 +24,12 @@ export const Navbar: FC<NavbarProps> = ({
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
+                <Link
+                  href="/browse"
+                  className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  Browse Games
+                </Link>
                 <span className="text-gray-700 dark:text-gray-300">
                   Welcome, {username || 'User'}!
                 </span>

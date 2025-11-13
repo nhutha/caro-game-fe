@@ -258,9 +258,12 @@ export default function Home() {
                     </div>
                   )}
 
-                  <button className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition-colors cursor-pointer">
-                    Join Game
-                  </button>
+                  <Link
+                    href="/browse"
+                    className="block w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition-colors text-center"
+                  >
+                    Browse Games
+                  </Link>
                   <button className="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-md font-medium transition-colors cursor-pointer">
                     View Game History
                   </button>
