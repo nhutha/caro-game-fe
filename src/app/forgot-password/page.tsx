@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Navbar } from '@/components/ui/Navbar';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -20,8 +21,8 @@ export default function ForgotPasswordPage() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       setIsEmailSent(true);
-    } catch (err) {
-      setError('Failed to send reset email. Please try again.');
+    } catch {
+      setError('Failed to send reset email. Please try again');
     } finally {
       setIsLoading(false);
     }
@@ -29,21 +30,26 @@ export default function ForgotPasswordPage() {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div className="text-center">
-            <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-              <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800">
+        <Navbar 
+          isAuthenticated={false}
+          onLogout={() => {}}
+        />
+        <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full space-y-8">
+            <div className="text-center">
+              <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+                <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+                Check your email
+              </h2>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                We&apos;ve sent a password reset link to {email}
+              </p>
             </div>
-            <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-              Check your email
-            </h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              We've sent a password reset link to {email}
-            </p>
-          </div>
           
           <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-lg">
             <div className="text-center space-y-4">
@@ -51,7 +57,7 @@ export default function ForgotPasswordPage() {
                 Please check your email and click the reset link to create a new password.
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Didn't receive the email? Check your spam folder or try again.
+                Didn&apos;t receive the email? Check your spam folder or try again.
               </p>
               
               <div className="pt-4 space-y-3">
@@ -76,32 +82,46 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
+    </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Form */}
-        <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-lg">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800">
+      <Navbar 
+        isAuthenticated={false}
+        onLogout={() => {}}
+      />
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+              Reset password
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Enter your email address and we&apos;ll send you a link to reset your password
+            </p>
+          </div>
+
+          {/* Form */}
+          <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-lg">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {error && (
+                <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-                  </div>
+                  </div>                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email address
               </label>
               <div className="mt-1">
@@ -141,18 +161,19 @@ export default function ForgotPasswordPage() {
                 {isLoading ? 'Sending...' : 'Send reset instructions'}
               </button>
             </div>
-          </form>
+            </form>
 
-          <div className="mt-6 text-center">
-            <Link 
-              href="/login"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to sign in
-            </Link>
+            <div className="mt-6 text-center">
+              <Link 
+                href="/login"
+                className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to sign in
+              </Link>
+            </div>
           </div>
         </div>
       </div>

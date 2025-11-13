@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client/react';
-import { SIGN_IN_USER } from '../../lib/graphql/mutations';
-import { useAuth } from '../../contexts/AuthContext';
+import { SIGN_IN_USER } from '@/lib/graphql/mutations';
+import { useAuth } from '@/contexts/AuthContext';
+import { Navbar } from '@/components/ui/Navbar';
 
 interface SignInResponse {
   signInUser: {
@@ -55,10 +56,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-lg">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <Navbar 
+        isAuthenticated={false}
+        onLogout={() => {}}
+      />
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-6 shadow-xl rounded-lg">
+            <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
                 <div className="flex">
@@ -167,9 +173,9 @@ export default function LoginPage() {
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
-          </form>
+            </form>
 
-          <div className="mt-6">
+            <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300 dark:border-gray-600" />
@@ -186,6 +192,7 @@ export default function LoginPage() {
                   Sign up here
                 </Link>
               </p>
+            </div>
             </div>
           </div>
         </div>
