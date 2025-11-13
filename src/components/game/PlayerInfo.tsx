@@ -7,11 +7,7 @@ interface PlayerInfoProps {
   isCurrentPlayer: boolean;
 }
 
-export const PlayerInfo: FC<PlayerInfoProps> = ({
-  player,
-  isCurrentTurn,
-  isCurrentPlayer,
-}) => {
+export const PlayerInfo: FC<PlayerInfoProps> = ({ player, isCurrentTurn, isCurrentPlayer }) => {
   if (!player) return null;
 
   const isPlayerX = player.symbol === 'X';
@@ -26,7 +22,9 @@ export const PlayerInfo: FC<PlayerInfoProps> = ({
   return (
     <div className={`flex-1 p-3 rounded-lg transition-all ${bgColor}`}>
       <div className="flex items-center gap-2">
-        <div className={`w-8 h-8 ${symbolColor} text-white rounded-full flex items-center justify-center font-bold text-sm`}>
+        <div
+          className={`w-8 h-8 ${symbolColor} text-white rounded-full flex items-center justify-center font-bold text-sm`}
+        >
           {player.symbol}
         </div>
         <div>

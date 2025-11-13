@@ -21,7 +21,10 @@ export default function Home() {
   const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
   const [roomName, setRoomName] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
-  const [players, setPlayers] = useState<{ X: GamePlayer | null; O: GamePlayer | null }>({
+  const [players, setPlayers] = useState<{
+    X: GamePlayer | null;
+    O: GamePlayer | null;
+  }>({
     X: null,
     O: null,
   });
@@ -88,7 +91,9 @@ export default function Home() {
       await createRoom({
         variables: {
           input: {
-            name: roomName || `Room by ${user?.username || 'User'} - ${new Date().toLocaleTimeString()}`,
+            name:
+              roomName ||
+              `Room by ${user?.username || 'User'} - ${new Date().toLocaleTimeString()}`,
           },
         },
       });
@@ -136,19 +141,15 @@ export default function Home() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
-        <Navbar
-          username={user?.username}
-          isAuthenticated={isAuthenticated}
-          onLogout={logout}
-        />
+        <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
 
         <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           {/* Room Info */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {room.name}
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Game ID: {room.id.slice(0, 8)}...</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{room.name}</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Game ID: {room.id.slice(0, 8)}...
+            </p>
           </div>
 
           {/* Players Info */}
@@ -192,11 +193,7 @@ export default function Home() {
   // Home screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
-      <Navbar
-        username={user?.username}
-        isAuthenticated={isAuthenticated}
-        onLogout={logout}
-      />
+      <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
 
       <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center">

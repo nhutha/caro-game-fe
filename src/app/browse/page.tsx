@@ -42,11 +42,7 @@ export default function BrowsePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <Navbar
-          username={user?.username}
-          isAuthenticated={isAuthenticated}
-          onLogout={logout}
-        />
+        <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
         <div className="flex items-center justify-center pt-32">
           <div className="text-center">
             <div className="animate-spin mb-4">
@@ -65,11 +61,7 @@ export default function BrowsePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <Navbar
-        username={user?.username}
-        isAuthenticated={isAuthenticated}
-        onLogout={logout}
-      />
+      <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
       <RoomListing
         isLoading={isLoadingRooms}
         onJoinRoom={handleJoinRoom}

@@ -21,9 +21,7 @@ export function RoomListing({
   onRefresh = () => {},
 }: RoomListingProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'waiting' | 'full'>(
-    'all'
-  );
+  const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'waiting' | 'full'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'players' | 'name'>('recent');
   const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
 
@@ -82,7 +80,8 @@ export function RoomListing({
 
   // Filter rooms
   let filteredRooms = displayRooms.filter((room) => {
-    const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch =
+      room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.master.username.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
@@ -222,7 +221,7 @@ export function RoomListing({
             <div className="text-center">
               <div className="text-6xl mb-4">🎮</div>
               <p className="text-slate-400 text-lg mb-4">
-                {searchQuery || (filterStatus !== 'all')
+                {searchQuery || filterStatus !== 'all'
                   ? 'No rooms found matching your criteria'
                   : 'No rooms available yet'}
               </p>

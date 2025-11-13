@@ -59,11 +59,7 @@ export function RoomCard({
         <div className="mb-4 h-1.5 bg-slate-700 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
-              isFull
-                ? 'bg-red-500'
-                : playerCount === 1
-                  ? 'bg-yellow-500'
-                  : 'bg-green-500'
+              isFull ? 'bg-red-500' : playerCount === 1 ? 'bg-yellow-500' : 'bg-green-500'
             }`}
             style={{ width: `${occupancyPercentage}%` }}
           />
@@ -79,11 +75,7 @@ export function RoomCard({
             <span>Status:</span>
             <span
               className={`font-semibold ${
-                isFull
-                  ? 'text-red-400'
-                  : playerCount === 1
-                    ? 'text-yellow-400'
-                    : 'text-green-400'
+                isFull ? 'text-red-400' : playerCount === 1 ? 'text-yellow-400' : 'text-green-400'
               }`}
             >
               {isFull ? 'Full' : playerCount === 1 ? 'Waiting' : 'Available'}

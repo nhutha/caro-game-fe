@@ -22,7 +22,7 @@ export const initializeGameState = (room: Room, currentUser: any) => {
 export const checkWinner = (board: (string | null)[], size: number = 15): string | null => {
   const checkLine = (positions: number[]): boolean => {
     const firstCell = board[positions[0]];
-    return firstCell !== null && positions.every(pos => board[pos] === firstCell);
+    return firstCell !== null && positions.every((pos) => board[pos] === firstCell);
   };
 
   // Check horizontal, vertical, and diagonals for winning pattern

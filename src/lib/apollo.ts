@@ -8,19 +8,17 @@ const httpLink = createHttpLink({
 const authLink = setContext((_, { headers }) => {
   // Get the authentication token from local storage if it exists
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  
+
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    }
-  }
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
 });
 
 const apolloClient = new ApolloClient({
-  link: from([
-    authLink.concat(httpLink),
-  ]),
+  link: from([authLink.concat(httpLink)]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {
