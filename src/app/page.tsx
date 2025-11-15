@@ -198,7 +198,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Logo */}
-          <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900 mb-8">
+          <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 mb-8 shadow-lg">
             <svg
               className="h-12 w-12 text-indigo-600 dark:text-indigo-400"
               fill="none"
@@ -214,30 +214,31 @@ export default function Home() {
             </svg>
           </div>
 
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome to Caro Game!
+          <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            Caro Game
           </h1>
 
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-            Challenge your friends in the classic Tic Tac Toe strategy game
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            Challenge your friends in the classic strategy game. Play online, climb the leaderboard,
+            and become a champion!
           </p>
 
           {isAuthenticated ? (
-            <div className="space-y-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 max-w-md mx-auto">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="space-y-8">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 max-w-md mx-auto">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                   Ready to Play?
                 </h2>
                 <div className="space-y-3">
                   <button
                     onClick={() => setShowCreateRoomModal(true)}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Create New Room
                   </button>
 
                   {room && (
-                    <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
+                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
                         Current Room:
                       </h3>
@@ -257,31 +258,40 @@ export default function Home() {
 
                   <Link
                     href="/browse"
-                    className="block w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-md font-medium transition-colors text-center"
+                    className="block w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/50 text-center"
                   >
                     Browse Games
                   </Link>
-                  <button className="w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-md font-medium transition-colors cursor-pointer">
+                  <Link
+                    href="/leaderboard"
+                    className="block w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center"
+                  >
+                    View Leaderboard
+                  </Link>
+                  <Link
+                    href="/history"
+                    className="block w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg cursor-pointer text-center"
+                  >
                     View Game History
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
-              <p className="text-gray-600 dark:text-gray-400">
+            <div className="space-y-8">
+              <p className="text-lg text-gray-600 dark:text-gray-400">
                 Sign in or create an account to start playing
               </p>
-              <div className="space-x-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/login"
-                  className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-md text-lg font-medium transition-colors"
+                  className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50"
                 >
                   Get Started
                 </Link>
                 <Link
                   href="/register"
-                  className="inline-block bg-transparent border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white px-8 py-3 rounded-md text-lg font-medium transition-colors"
+                  className="inline-block bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300"
                 >
                   Create Account
                 </Link>

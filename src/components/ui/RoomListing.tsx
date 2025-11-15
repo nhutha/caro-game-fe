@@ -120,12 +120,14 @@ export function RoomListing({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-24 pb-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Browse Games</h1>
-          <p className="text-slate-400 text-lg">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-2">
+            Browse Games
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
             Join an existing room or create your own Caro match
           </p>
         </div>
@@ -135,13 +137,13 @@ export function RoomListing({
           {/* Search bar */}
           <div className="md:col-span-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search rooms by name or player..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
               />
             </div>
           </div>
@@ -150,7 +152,7 @@ export function RoomListing({
           <button
             onClick={onCreateRoom}
             disabled={isLoading}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg font-semibold hover:from-green-500 hover:to-green-600 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <Plus className="w-5 h-5" />
             Create New Room
@@ -158,11 +160,11 @@ export function RoomListing({
         </div>
 
         {/* Filter and sort options */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex gap-2 flex-wrap">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <span className="text-sm text-slate-400">Filter:</span>
+              <Filter className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">Filter:</span>
             </div>
             {(['all', 'available', 'waiting', 'full'] as const).map((status) => (
               <button
@@ -170,8 +172,8 @@ export function RoomListing({
                 onClick={() => setFilterStatus(status)}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
                   filterStatus === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
                 {status === 'all' && 'All Rooms'}
@@ -184,11 +186,11 @@ export function RoomListing({
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-400">Sort by:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">Sort by:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="px-3 py-1 bg-slate-800 border border-slate-700 rounded text-slate-300 text-sm focus:outline-none focus:border-blue-500 transition-all"
+                className="px-3 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-800 dark:text-gray-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer"
               >
                 <option value="recent">Recent</option>
                 <option value="players">Most Players</option>
@@ -198,10 +200,14 @@ export function RoomListing({
             <button
               onClick={onRefresh}
               disabled={isLoading}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-all disabled:opacity-50"
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-all disabled:opacity-50"
               title="Refresh room list"
             >
-              <RefreshCw className={`w-5 h-5 text-slate-400 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${
+                  isLoading ? 'animate-spin' : ''
+                }`}
+              />
             </button>
           </div>
         </div>
@@ -210,24 +216,27 @@ export function RoomListing({
         {isLoading && !displayRooms.length ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="animate-spin mb-4">
-                <div className="w-12 h-12 border-4 border-slate-700 border-t-blue-500 rounded-full" />
+              <div className="inline-block">
+                <div className="relative w-16 h-16">
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full animate-spin" />
+                  <div className="absolute inset-2 bg-white dark:bg-gray-900 rounded-full" />
+                </div>
               </div>
-              <p className="text-slate-400 text-lg">Loading rooms...</p>
+              <p className="text-gray-600 dark:text-gray-400 text-lg mt-4">Loading rooms...</p>
             </div>
           </div>
         ) : filteredRooms.length === 0 ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="text-6xl mb-4">🎮</div>
-              <p className="text-slate-400 text-lg mb-4">
+              <p className="text-gray-600 dark:text-gray-400 text-lg mb-4">
                 {searchQuery || filterStatus !== 'all'
                   ? 'No rooms found matching your criteria'
                   : 'No rooms available yet'}
               </p>
               <button
                 onClick={onCreateRoom}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold hover:from-blue-500 hover:to-blue-600 transition-all inline-flex items-center gap-2"
+                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-indigo-500/50"
               >
                 <Plus className="w-5 h-5" />
                 Create First Room
@@ -251,29 +260,31 @@ export function RoomListing({
 
         {/* Stats footer */}
         {filteredRooms.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-slate-700">
+          <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                <div className="text-2xl font-bold text-blue-400">{displayRooms.length}</div>
-                <div className="text-sm text-slate-400 mt-1">Total Rooms</div>
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  {displayRooms.length}
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Total Rooms</div>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                <div className="text-2xl font-bold text-green-400">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {displayRooms.filter((r) => getPlayerCount(r.id) < 2).length}
                 </div>
-                <div className="text-sm text-slate-400 mt-1">Available</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Available</div>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                <div className="text-2xl font-bold text-yellow-400">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   {displayRooms.filter((r) => getPlayerCount(r.id) === 1).length}
                 </div>
-                <div className="text-sm text-slate-400 mt-1">Waiting</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Waiting</div>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                <div className="text-2xl font-bold text-red-400">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {displayRooms.filter((r) => getPlayerCount(r.id) >= 2).length}
                 </div>
-                <div className="text-sm text-slate-400 mt-1">Full</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Full</div>
               </div>
             </div>
           </div>
