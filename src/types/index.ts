@@ -12,6 +12,8 @@ export interface Room {
   id: string;
   name: string;
   master: User;
+  guest?: User;  // Guest player (nullable)
+  createdAt: string;
 }
 
 export interface CreateRoomResponse {

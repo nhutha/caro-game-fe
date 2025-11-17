@@ -4,82 +4,40 @@ import { useState } from 'react';
 import { Room } from '@/types';
 import { RoomCard } from './RoomCard';
 import { Search, RefreshCw, Plus, Filter } from 'lucide-react';
+import { useRooms } from '@/hooks/useRooms';
 
 interface RoomListingProps {
-  rooms?: Room[];
-  isLoading?: boolean;
   onJoinRoom?: (roomId: string) => void;
   onCreateRoom?: () => void;
-  onRefresh?: () => void;
 }
 
 export function RoomListing({
-  rooms = [],
-  isLoading = false,
   onJoinRoom = () => {},
   onCreateRoom = () => {},
-  onRefresh = () => {},
 }: RoomListingProps) {
+  // Fetch rooms with real-time updates
+  const { rooms: apiRooms, loading: isLoading, error, refetch } = useRooms();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'waiting' | 'full'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'players' | 'name'>('recent');
   const [joiningRoomId, setJoiningRoomId] = useState<string | null>(null);
 
-  // Mock data for demonstration
-  const mockRooms: Room[] = [
-    {
-      id: '1a2b3c4d5e6f7g8h',
-      name: '🎮 Beginner Match',
-      master: {
-        id: 'user1',
-        username: 'AlexPlayer',
-        email: 'alex@example.com',
-      },
-    },
-    {
-      id: '2b3c4d5e6f7g8h9i',
-      name: '⚡ Fast Paced Game',
-      master: {
-        id: 'user2',
-        username: 'SpeedRunner',
-        email: 'speed@example.com',
-      },
-    },
-    {
-      id: '3c4d5e6f7g8h9i0j',
-      name: '🏆 Championship Round',
-      master: {
-        id: 'user3',
-        username: 'ProGamer',
-        email: 'pro@example.com',
-      },
-    },
-    {
-      id: '4d5e6f7g8h9i0j1k',
-      name: '🌟 Friendly Match',
-      master: {
-        id: 'user4',
-        username: 'CasualPlayer',
-        email: 'casual@example.com',
-      },
-    },
-  ];
+  // Use API rooms
+  const rooms = apiRooms;
+  const displayRooms = rooms;
 
-  const displayRooms = rooms.length > 0 ? rooms : mockRooms;
-
-  // Mock player counts
+  // Get player count from room data
+  // Room has master (1 player) + guest (if exists, 1 player) = max 2 players
   const getPlayerCount = (roomId: string) => {
-    const counts: { [key: string]: number } = {
-      '1a2b3c4d5e6f7g8h': 1,
-      '2b3c4d5e6f7g8h9i': 2,
-      '3c4d5e6f7g8h9i0j': 2,
-      '4d5e6f7g8h9i0j1k': 1,
-    };
-    return counts[roomId] || 1;
+    const room = rooms.find((r: Room) => r.id === roomId);
+    if (!room) return 0;
+    // Master always exists (1) + guest (if exists, 1)
+    return room.guest ? 2 : 1;
   };
 
   // Filter rooms
-  let filteredRooms = displayRooms.filter((room) => {
+  let filteredRooms = displayRooms.filter((room: Room) => {
     const matchesSearch =
       room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.master.username.toLowerCase().includes(searchQuery.toLowerCase());
@@ -198,7 +156,7 @@ export function RoomListing({
               </select>
             </div>
             <button
-              onClick={onRefresh}
+              onClick={refetch}
               disabled={isLoading}
               className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-all disabled:opacity-50"
               title="Refresh room list"
