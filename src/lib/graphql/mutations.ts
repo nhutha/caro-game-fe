@@ -46,6 +46,28 @@ export const CREATE_ROOM = gql`
   }
 `;
 
+export const JOIN_ROOM = gql`
+  mutation JoinRoom($input: JoinRoomInput!) {
+    joinRoom(input: $input) {
+      room {
+        id
+        name
+        createdAt
+        master {
+          id
+          username
+          email
+        }
+        guest {
+          id
+          username
+          email
+        }
+      }
+    }
+  }
+`;
+
 export const GET_CURRENT_USER = gql`
   query GetCurrentUser {
     currentUser {

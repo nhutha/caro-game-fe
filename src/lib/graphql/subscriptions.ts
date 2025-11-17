@@ -23,18 +23,20 @@ export const ROOM_CREATED_SUBSCRIPTION = `
 export const ROOM_UPDATED_SUBSCRIPTION = `
   subscription RoomUpdated {
     roomUpdated {
-      id
-      name
-      createdAt
-      master {
+      room {
         id
-        username
-        email
-      }
-      guest {
-        id
-        username
-        email
+        name
+        createdAt
+        master {
+          id
+          username
+          email
+        }
+        guest {
+          id
+          username
+          email
+        }
       }
     }
   }

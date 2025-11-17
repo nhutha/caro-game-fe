@@ -25,3 +25,8 @@ export interface CreateRoomResponse {
 export interface CreateRoomInput {
   name: string;
 }
+
+
+export interface JoinRoomInput {
+  id: string;
+}

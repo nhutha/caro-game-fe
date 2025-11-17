@@ -73,8 +73,9 @@ export function useRooms(): UseRoomsResult {
 
   // Handle room updated
   const handleRoomUpdated = useCallback((subscriptionData: any) => {
-    const updatedRoom = subscriptionData.roomUpdated;
-    if (updatedRoom) {
+    const roomUpdatedData = subscriptionData.roomUpdated;
+    if (roomUpdatedData) {
+      const updatedRoom = roomUpdatedData.room;
       console.log('[useRooms] Room updated:', updatedRoom);
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
@@ -104,20 +105,20 @@ export function useRooms(): UseRoomsResult {
   });
 
   // Subscribe to room updated events
-  // useActionCableSubscription({
-  //   query: ROOM_UPDATED_SUBSCRIPTION,
-  //   operationName: 'RoomUpdated',
-  //   onData: handleRoomUpdated,
-  //   onError: (err) => console.error('[useRooms] Error in RoomUpdated subscription:', err),
-  // });
+  useActionCableSubscription({
+    query: ROOM_UPDATED_SUBSCRIPTION,
+    operationName: 'RoomUpdated',
+    onData: handleRoomUpdated,
+    onError: (err) => console.error('[useRooms] Error in RoomUpdated subscription:', err),
+  });
 
   // Subscribe to room deleted events
-  // useActionCableSubscription({
-  //   query: ROOM_DELETED_SUBSCRIPTION,
-  //   operationName: 'RoomDeleted',
-  //   onData: handleRoomDeleted,
-  //   onError: (err) => console.error('[useRooms] Error in RoomDeleted subscription:', err),
-  // });
+  useActionCableSubscription({
+    query: ROOM_DELETED_SUBSCRIPTION,
+    operationName: 'RoomDeleted',
+    onData: handleRoomDeleted,
+    onError: (err) => console.error('[useRooms] Error in RoomDeleted subscription:', err),
+  });
 
   return {
     rooms,

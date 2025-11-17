@@ -5,18 +5,20 @@ import { Room } from '@/types';
 import { RoomCard } from './RoomCard';
 import { Search, RefreshCw, Plus, Filter } from 'lucide-react';
 import { useRooms } from '@/hooks/useRooms';
+import { useJoinRoom } from '@/hooks/useJoinRoom';
+import { useRouter } from 'next/navigation';
 
 interface RoomListingProps {
-  onJoinRoom?: (roomId: string) => void;
   onCreateRoom?: () => void;
 }
 
 export function RoomListing({
-  onJoinRoom = () => {},
   onCreateRoom = () => {},
 }: RoomListingProps) {
   // Fetch rooms with real-time updates
   const { rooms: apiRooms, loading: isLoading, error, refetch } = useRooms();
+  const { joinRoom, loading: joiningLoading } = useJoinRoom();
+  const router = useRouter();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'waiting' | 'full'>('all');
@@ -69,9 +71,17 @@ export function RoomListing({
   const handleJoinRoom = async (roomId: string) => {
     setJoiningRoomId(roomId);
     try {
-      onJoinRoom(roomId);
-      // Simulate loading
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      console.log('[RoomListing] Attempting to join room:', roomId);
+      const room = await joinRoom(roomId);
+      
+      if (room) {
+        console.log('[RoomListing] Successfully joined room, redirecting...');
+        // Redirect to game room page
+        router.push(`/room/${roomId}`);
+      }
+    } catch (err: any) {
+      console.error('[RoomListing] Failed to join room:', err);
+      alert(err.message || 'Failed to join room');
     } finally {
       setJoiningRoomId(null);
     }
