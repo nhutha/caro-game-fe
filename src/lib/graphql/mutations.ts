@@ -1,34 +1,38 @@
 import { gql } from '@apollo/client';
 
+// ============== AUTHENTICATION ==============
+
+export const REGISTER_USER = gql`
+  mutation RegisterUser($input: RegisterUserInput!) {
+    registerUser(input: $input) {
+      user {
+        id
+        username
+        email
+      }
+      accessToken
+    }
+  }
+`;
+
 export const SIGN_IN_USER = gql`
   mutation SignInUser($input: SignInUserInput!) {
     signInUser(input: $input) {
-      accessToken
-    }
-  }
-`;
-
-export const SIGN_UP_USER = gql`
-  mutation SignUpUser($input: SignUpUserInput!) {
-    signUpUser(input: $input) {
-      accessToken
       user {
         id
-        email
         username
+        email
+        wins
+        losses
+        draws
+        points
       }
+      accessToken
     }
   }
 `;
 
-export const FORGOT_PASSWORD = gql`
-  mutation ForgotPassword($input: ForgotPasswordInput!) {
-    forgotPassword(input: $input) {
-      success
-      message
-    }
-  }
-`;
+// ============== ROOMS ==============
 
 export const CREATE_ROOM = gql`
   mutation CreateRoom($input: CreateRoomInput!) {
@@ -36,22 +40,7 @@ export const CREATE_ROOM = gql`
       room {
         id
         name
-        master {
-          id
-          username
-          email
-        }
-      }
-    }
-  }
-`;
-
-export const JOIN_ROOM = gql`
-  mutation JoinRoom($input: JoinRoomInput!) {
-    joinRoom(input: $input) {
-      room {
-        id
-        name
+        status
         createdAt
         master {
           id
@@ -68,27 +57,119 @@ export const JOIN_ROOM = gql`
   }
 `;
 
-export const GET_CURRENT_USER = gql`
-  query GetCurrentUser {
-    currentUser {
-      id
-      email
-      username
-      createdAt
+export const JOIN_ROOM = gql`
+  mutation JoinRoom($input: JoinRoomInput!) {
+    joinRoom(input: $input) {
+      room {
+        id
+        name
+        status
+        createdAt
+        master {
+          id
+          username
+          email
+        }
+        guest {
+          id
+          username
+          email
+        }
+      }
     }
   }
 `;
 
-export const GAME_UPDATED_SUBSCRIPTION = gql`
-  subscription GameUpdated($gameId: ID!) {
-    gameUpdated(gameId: $gameId) {
-      id
-      status
-      board
-      currentPlayer
-      winner
-      createdAt
-      updatedAt
+export const LEAVE_ROOM = gql`
+  mutation LeaveRoom($input: LeaveRoomInput!) {
+    leaveRoom(input: $input) {
+      room {
+        id
+        guest {
+          id
+        }
+      }
+    }
+  }
+`;
+
+// ============== GAME ==============
+
+export const START_GAME = gql`
+  mutation StartGame($input: StartGameInput!) {
+    startGame(input: $input) {
+      game {
+        id
+        status
+        boardState
+        turnNumber
+        player1 {
+          id
+          username
+        }
+        player2 {
+          id
+          username
+        }
+        currentTurnPlayer {
+          id
+          username
+        }
+        winner {
+          id
+          username
+        }
+        winningPositions
+        resultType
+      }
+    }
+  }
+`;
+
+export const MAKE_MOVE = gql`
+  mutation MakeMove($input: MakeMoveInput!) {
+    makeMove(input: $input) {
+      move {
+        id
+        row
+        col
+        symbol
+        turnNumber
+      }
+      game {
+        id
+        boardState
+        status
+        currentTurnPlayer {
+          id
+          username
+        }
+        winner {
+          id
+          username
+        }
+      }
+      gameEnded
+      winner {
+        id
+        username
+      }
+    }
+  }
+`;
+
+export const FORFEIT_GAME = gql`
+  mutation ForfeitGame($input: ForfeitGameInput!) {
+    forfeitGame(input: $input) {
+      game {
+        id
+        status
+        winner {
+          id
+          username
+        }
+        resultType
+      }
     }
   }
 `;

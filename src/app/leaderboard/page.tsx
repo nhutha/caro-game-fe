@@ -1,70 +1,72 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { Navbar } from '@/components/ui/Navbar';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { Leaderboard } from '@/components/ui/Leaderboard';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, Target } from 'lucide-react';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
 
 export default function LeaderboardPage() {
-  const { isAuthenticated, user, logout, isLoading } = useAuth();
-  const router = useRouter();
+  const { leaderboard, loading, error } = useLeaderboard(50);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 pt-24 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading leaderboard...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const handleViewProfile = (username: string) => {
-    router.push(`/profile/${username}`);
+  const getRankIcon = (rank: number) => {
+    if (rank === 1) return <Trophy className="w-8 h-8 text-yellow-500" />;
+    if (rank === 2) return <Medal className="w-8 h-8 text-gray-400" />;
+    if (rank === 3) return <Award className="w-8 h-8 text-amber-700" />;
+    return <span className="text-2xl font-bold text-gray-500">#{rank}</span>;
   };
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
-      <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
-
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <Trophy className="h-8 w-8 text-yellow-500" />
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leaderboard</h1>
-          </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            See the top players and track your ranking
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8 text-center">
+          <Trophy className="w-20 h-20 mx-auto mb-4 text-yellow-500" />
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-2">
+            Leaderboard
+          </h1>
         </div>
 
-        {/* Leaderboard Component */}
-        <Leaderboard onViewProfile={handleViewProfile} />
-
-        {/* Action Buttons */}
-        <div className="flex gap-4 justify-center mt-12">
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50 cursor-pointer"
-          >
-            Return Home
-          </button>
-          <button
-            onClick={() => router.push('/browse')}
-            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/50 cursor-pointer"
-          >
-            Browse Games
-          </button>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-indigo-600 text-white">
+              <tr>
+                <th className="px-6 py-4 text-left">Rank</th>
+                <th className="px-6 py-4 text-left">Player</th>
+                <th className="px-6 py-4 text-center">Points</th>
+                <th className="px-6 py-4 text-center">W/L/D</th>
+                <th className="px-6 py-4 text-center">Games</th>
+                <th className="px-6 py-4 text-center">Win Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboard.map((player, index) => (
+                <tr key={player.id} className="border-b dark:border-gray-700">
+                  <td className="px-6 py-4">{getRankIcon(index + 1)}</td>
+                  <td className="px-6 py-4 font-semibold">{player.username}</td>
+                  <td className="px-6 py-4 text-center">{player.points}</td>
+                  <td className="px-6 py-4 text-center text-sm">
+                    <span className="text-green-600">{player.wins}</span>/
+                    <span className="text-red-600">{player.losses}</span>/
+                    <span className="text-yellow-600">{player.draws}</span>
+                  </td>
+                  <td className="px-6 py-4 text-center">{player.totalGames}</td>
+                  <td className="px-6 py-4 text-center">{player.winRate.toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

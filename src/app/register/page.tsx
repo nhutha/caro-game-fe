@@ -4,12 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client/react';
-import { SIGN_UP_USER } from '@/lib/graphql/mutations';
+import { REGISTER_USER } from '@/lib/graphql/mutations';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navbar } from '@/components/ui/Navbar';
 
 interface SignUpResponse {
-  signUpUser: {
+  registerUser: {
     accessToken: string;
     user: {
       id: string;
@@ -33,11 +33,11 @@ export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const [signUpUser, { loading: isLoading }] = useMutation<SignUpResponse>(SIGN_UP_USER, {
+  const [registerUser, { loading: isLoading }] = useMutation<SignUpResponse>(REGISTER_USER, {
     onCompleted: (data: SignUpResponse) => {
-      if (data.signUpUser.accessToken) {
-        login(data.signUpUser.accessToken);
-        router.push('/');
+      if (data.registerUser.accessToken) {
+        login(data.registerUser.accessToken);
+        router.push('/browse');
       }
     },
     onError: (error: Error) => {
@@ -68,7 +68,7 @@ export default function RegisterPage() {
     }
 
     try {
-      await signUpUser({
+      await registerUser({
         variables: {
           input: {
             username: formData.username,

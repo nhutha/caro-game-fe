@@ -4,28 +4,11 @@ import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Room, User } from '@/types';
 import apolloClient from '@/lib/apollo';
-import { gql } from '@apollo/client';
-import { Shield, Users, ArrowLeft, Loader2 } from 'lucide-react';
-
-const GET_ROOM = gql`
-  query GetRoom($roomId: ID!) {
-    room(roomId: $roomId) {
-      id
-      name
-      createdAt
-      master {
-        id
-        username
-        email
-      }
-      guest {
-        id
-        username
-        email
-      }
-    }
-  }
-`;
+import { GET_ROOM, GET_ME } from '@/lib/graphql/queries';
+import { ROOM_UPDATED_BY_ID_SUBSCRIPTION } from '@/lib/graphql/subscriptions';
+import { useStartGame } from '@/hooks/useStartGame';
+import { useActionCableSubscription } from '@/hooks/useActionCableSubscription';
+import { Shield, Users, ArrowLeft, Loader2, Play } from 'lucide-react';
 
 interface GetRoomResponse {
   room: Room;
@@ -39,22 +22,36 @@ export default function RoomPage({ params }: RoomPageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [joinNotification, setJoinNotification] = useState<string | null>(null);
+  const { startGame, loading: startingGame } = useStartGame();
 
   useEffect(() => {
-    const fetchRoom = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const result = await apolloClient.query<GetRoomResponse>({
-          query: GET_ROOM,
-          variables: { roomId: resolvedParams.id },
-          fetchPolicy: 'network-only',
-        });
+        
+        // Fetch room and current user in parallel
+        const [roomResult, userResult] = await Promise.all([
+          apolloClient.query<GetRoomResponse>({
+            query: GET_ROOM,
+            variables: { 
+              roomId: resolvedParams.id
+            },
+            fetchPolicy: 'network-only',
+          }),
+          apolloClient.query<{ me: User }>({
+            query: GET_ME,
+            fetchPolicy: 'network-only',
+          }),
+        ]);
 
-        setRoom(result.data?.room || null);
+        setRoom(roomResult.data?.room || null);
+        setCurrentUser(userResult.data?.me || null);
       } catch (err: any) {
-        console.error('Error fetching room:', err);
+        console.error('Error fetching data:', err);
         setError(err.message || 'Failed to load room');
       } finally {
         setLoading(false);
@@ -62,9 +59,86 @@ export default function RoomPage({ params }: RoomPageProps) {
     };
 
     if (resolvedParams.id) {
-      fetchRoom();
+      fetchData();
     }
   }, [resolvedParams.id]);
+
+  // Subscribe to room_updated to get real-time updates
+  // Handles: player_joined, player_left, game_started, room_deleted
+  useActionCableSubscription({
+    query: ROOM_UPDATED_BY_ID_SUBSCRIPTION,
+    operationName: 'RoomUpdatedById',
+    variables: { roomId: resolvedParams.id },
+    skip: !resolvedParams.id,
+    onData: (data) => {
+      console.log('Room updated subscription data:', data);
+      if (data.roomUpdated?.room) {
+        const previousRoom = room;
+        const newRoom = data.roomUpdated.room;
+        const eventType = data.roomUpdated.eventType;
+        const updatedBy = data.roomUpdated.updatedBy;
+        
+        setRoom(newRoom);
+        
+        // Handle different event types
+        switch (eventType) {
+          case 'player_joined':
+            // Show notification when a new user joins
+            if (!previousRoom?.guest && newRoom.guest && updatedBy) {
+              setJoinNotification(`${updatedBy.username} joined the room! 🎉`);
+              setTimeout(() => setJoinNotification(null), 5000);
+            }
+            break;
+            
+          case 'player_left':
+            // Show notification when a player leaves
+            if (updatedBy) {
+              setJoinNotification(`${updatedBy.username} left the room`);
+              setTimeout(() => setJoinNotification(null), 5000);
+            }
+            break;
+            
+          case 'game_started':
+            // Navigate to game when it starts
+            if (newRoom.game?.id) {
+              console.log('Game started, navigating to game page...');
+              router.push(`/game/${newRoom.game.id}`);
+            }
+            break;
+            
+          case 'room_deleted':
+            // Navigate back to browse when room is deleted
+            setJoinNotification('Room has been deleted');
+            setTimeout(() => {
+              router.push('/browse');
+            }, 2000);
+            break;
+            
+          default:
+            // Generic room update
+            console.log('Room updated:', eventType);
+        }
+      }
+    },
+    onError: (error) => {
+      console.error('Room subscription error:', error);
+    },
+  });
+
+  const handleStartGame = async () => {
+    if (!room) return;
+
+    try {
+      const game = await startGame(room.id);
+      if (game) {
+        console.log('Game started, navigating to game page...');
+        router.push(`/game/${game.id}`);
+      }
+    } catch (err: any) {
+      console.error('Failed to start game:', err);
+      alert(err.message || 'Failed to start game');
+    }
+  };
 
   if (loading) {
     return (
@@ -102,10 +176,22 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   const playerCount = room.guest ? 2 : 1;
   const isWaiting = !room.guest;
+  const isMaster = currentUser?.id === room.master.id;
+  const canStartGame = !isWaiting && isMaster;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Join notification toast */}
+        {joinNotification && (
+          <div className="fixed top-24 right-4 z-50 animate-slide-in-right">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 border border-emerald-300">
+              <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+              <p className="font-semibold text-lg">{joinNotification}</p>
+            </div>
+          </div>
+        )}
+
         {/* Back button */}
         <button
           onClick={() => router.push('/browse')}
@@ -143,6 +229,15 @@ export default function RoomPage({ params }: RoomPageProps) {
             </div>
           )}
 
+          {/* Ready to start */}
+          {canStartGame && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+              <p className="text-green-800 dark:text-green-300 font-medium text-center">
+                ✅ Ready to start! Both players are in the room.
+              </p>
+            </div>
+          )}
+
           {/* Players grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Master player */}
@@ -160,6 +255,7 @@ export default function RoomPage({ params }: RoomPageProps) {
                 <div>
                   <p className="font-bold text-gray-900 dark:text-white text-lg">
                     {room.master.username}
+                    {currentUser?.id === room.master.id && ' (You)'}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {room.master.email}
@@ -192,6 +288,7 @@ export default function RoomPage({ params }: RoomPageProps) {
                   <div>
                     <p className="font-bold text-gray-900 dark:text-white text-lg">
                       {room.guest.username}
+                      {currentUser?.id === room.guest.id && ' (You)'}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {room.guest.email}
@@ -210,9 +307,23 @@ export default function RoomPage({ params }: RoomPageProps) {
 
           {/* Action buttons */}
           <div className="mt-8 flex gap-4">
-            {!isWaiting && (
-              <button className="flex-1 px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg hover:shadow-emerald-500/50 text-lg">
-                🎮 Start Game
+            {canStartGame && (
+              <button 
+                onClick={handleStartGame}
+                disabled={startingGame}
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg hover:shadow-emerald-500/50 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {startingGame ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Starting Game...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5" />
+                    Start Game
+                  </>
+                )}
               </button>
             )}
             <button
@@ -221,20 +332,6 @@ export default function RoomPage({ params }: RoomPageProps) {
             >
               Leave Room
             </button>
-          </div>
-        </div>
-
-        {/* Game board placeholder */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-            Game Board
-          </h2>
-          <div className="flex items-center justify-center py-20">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
-              {isWaiting
-                ? 'Waiting for opponent to start the game...'
-                : 'Game board will appear here once the game starts'}
-            </p>
           </div>
         </div>
       </div>

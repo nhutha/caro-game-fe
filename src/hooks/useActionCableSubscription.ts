@@ -7,6 +7,7 @@ interface UseActionCableSubscriptionOptions {
   variables?: Record<string, any>;
   onData: (data: any) => void;
   onError?: (error: any) => void;
+  skip?: boolean; // Add skip option to conditionally disable subscription
 }
 
 /**
@@ -19,6 +20,7 @@ export function useActionCableSubscription({
   variables = {},
   onData,
   onError,
+  skip = false,
 }: UseActionCableSubscriptionOptions) {
   // Store callbacks in refs to keep them stable
   const onDataRef = useRef(onData);
@@ -34,6 +36,12 @@ export function useActionCableSubscription({
   }, [onError]);
 
   useEffect(() => {
+    // Skip subscription if skip is true
+    if (skip) {
+      console.log(`[ActionCable] Skipping subscription for ${operationName}`);
+      return;
+    }
+
     const cable = createCableConsumer();
     
     const subscription = cable.subscriptions.create('GraphqlChannel', {
@@ -70,5 +78,5 @@ export function useActionCableSubscription({
       console.log(`[ActionCable] Unsubscribing from ${operationName}`);
       subscription.unsubscribe();
     };
-  }, [query, operationName, variables]);
+  }, [query, operationName, JSON.stringify(variables), skip]); // Add skip to dependencies
 }

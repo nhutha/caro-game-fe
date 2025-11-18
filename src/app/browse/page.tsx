@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/ui/Navbar';
 import { RoomListing } from '@/components/ui/RoomListing';
+import { CreateRoomModal } from '@/components/modals/CreateRoomModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCreateRoom } from '@/hooks/useCreateRoom';
 
 export default function BrowsePage() {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   const router = useRouter();
-  const [isLoadingRooms, setIsLoadingRooms] = useState(false);
+  const { createRoom, loading: isCreatingRoom } = useCreateRoom();
+  
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [roomName, setRoomName] = useState('');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -17,26 +22,30 @@ export default function BrowsePage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  const handleJoinRoom = (roomId: string) => {
-    console.log('Joining room:', roomId);
-    // TODO: Implement room joining logic
-    router.push(`/game/${roomId}`);
-  };
-
   const handleCreateRoom = () => {
-    console.log('Create new room');
-    // TODO: Navigate to game page or trigger create room modal
-    router.push('/?create=true');
+    setIsCreateModalOpen(true);
+    setRoomName(''); // Reset room name
   };
 
-  const handleRefresh = async () => {
-    setIsLoadingRooms(true);
+  const handleCreateRoomSubmit = async () => {
     try {
-      // TODO: Fetch rooms from API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } finally {
-      setIsLoadingRooms(false);
+      const room = await createRoom(roomName);
+      if (room) {
+        console.log('[BrowsePage] Room created successfully:', room);
+        setIsCreateModalOpen(false);
+        setRoomName('');
+        // Redirect to the room page
+        router.push(`/room/${room.id}`);
+      }
+    } catch (err: any) {
+      console.error('[BrowsePage] Failed to create room:', err);
+      alert(err.message || 'Failed to create room');
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    setRoomName('');
   };
 
   if (isLoading) {
@@ -66,10 +75,15 @@ export default function BrowsePage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
       <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
       <RoomListing
-        isLoading={isLoadingRooms}
-        onJoinRoom={handleJoinRoom}
         onCreateRoom={handleCreateRoom}
-        onRefresh={handleRefresh}
+      />
+      <CreateRoomModal
+        isOpen={isCreateModalOpen}
+        roomName={roomName}
+        isLoading={isCreatingRoom}
+        onRoomNameChange={setRoomName}
+        onCreateRoom={handleCreateRoomSubmit}
+        onClose={handleCloseModal}
       />
     </div>
   );

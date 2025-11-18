@@ -66,11 +66,26 @@ body {
     }
   }
 
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
   .animate-fadeIn {
     animation: fadeIn 300ms ease-in-out;
   }
 
   .animate-slideUp {
     animation: slideUp 300ms ease-out;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 400ms ease-out;
   }
 }

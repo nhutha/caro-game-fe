@@ -4,6 +4,7 @@ export const ROOM_CREATED_SUBSCRIPTION = `
       room {
         id
         name
+        status
         createdAt
         master {
           id
@@ -26,6 +27,7 @@ export const ROOM_UPDATED_SUBSCRIPTION = `
       room {
         id
         name
+        status
         createdAt
         master {
           id
@@ -37,6 +39,45 @@ export const ROOM_UPDATED_SUBSCRIPTION = `
           username
           email
         }
+        game {
+          id
+        }
+      }
+      eventType
+      updatedBy {
+        id
+        username
+      }
+    }
+  }
+`;
+
+export const ROOM_UPDATED_BY_ID_SUBSCRIPTION = `
+  subscription RoomUpdatedById($roomId: ID!) {
+    roomUpdated(roomId: $roomId) {
+      room {
+        id
+        name
+        status
+        createdAt
+        master {
+          id
+          username
+          email
+        }
+        guest {
+          id
+          username
+          email
+        }
+        game {
+          id
+        }
+      }
+      eventType
+      updatedBy {
+        id
+        username
       }
     }
   }
@@ -46,6 +87,48 @@ export const ROOM_DELETED_SUBSCRIPTION = `
   subscription RoomDeleted {
     roomDeleted {
       id
+    }
+  }
+`;
+
+export const GAME_UPDATED_SUBSCRIPTION = `
+  subscription GameUpdated($gameId: ID!) {
+    gameUpdated(gameId: $gameId) {
+      game {
+          id
+        status
+        boardState
+        turnNumber
+        player1 {
+          id
+          username
+        }
+        player2 {
+          id
+          username
+        }
+        currentTurnPlayer {
+          id
+          username
+        }
+        winner {
+          id
+          username
+        }
+        winningPositions
+        resultType
+      }
+      move {
+        row
+        col
+        symbol
+        turnNumber
+        user {
+          id
+          username
+        }
+      }
+      eventType
     }
   }
 `;

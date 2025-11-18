@@ -1,314 +1,182 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMutation } from '@apollo/client/react';
-import { CREATE_ROOM } from '@/lib/graphql/mutations';
-import { useEffect, useState } from 'react';
-import createCableConsumer from '@/lib/actioncable';
-import { CreateRoomResponse, Room, GamePlayer } from '@/types';
 import { Navbar } from '@/components/ui/Navbar';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { CreateRoomModal } from '@/components/modals/CreateRoomModal';
-import { GameBoard } from '@/components/game/GameBoard';
-import { PlayerInfo } from '@/components/game/PlayerInfo';
-import { useBodyOverflow } from '@/hooks/useBodyOverflow';
-import { createMockOpponent } from '@/utils/gameUtils';
+import { Play, Users, Trophy, Zap } from 'lucide-react';
 
 export default function Home() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
-  const [room, setRoom] = useState<Room | null>(null);
-  const [showCreateRoomModal, setShowCreateRoomModal] = useState(false);
-  const [roomName, setRoomName] = useState('');
-  const [gameStarted, setGameStarted] = useState(false);
-  const [players, setPlayers] = useState<{
-    X: GamePlayer | null;
-    O: GamePlayer | null;
-  }>({
-    X: null,
-    O: null,
-  });
-  const [boardState, setBoardState] = useState<(string | null)[]>(Array(225).fill(null));
-  const [currentTurn, setCurrentTurn] = useState<'X' | 'O'>('X');
+  const router = useRouter();
 
-  const [createRoom, { loading: createRoomLoading }] = useMutation<CreateRoomResponse>(
-    CREATE_ROOM,
-    {
-      onCompleted: (data: CreateRoomResponse) => {
-        const roomData = data.createRoom.room;
-        setRoom(roomData);
-        setShowCreateRoomModal(false);
-
-        setPlayers({
-          X: { ...roomData.master, symbol: 'X' },
-          O: createMockOpponent(),
-        });
-        setGameStarted(true);
-      },
-      onError: (error: Error) => {
-        console.error('Create room error:', error);
-        alert('Failed to create room: ' + error.message);
-      },
-    }
-  );
-
-  // Setup ActionCable subscription
+  // Redirect authenticated users to browse page
   useEffect(() => {
-    if (!isAuthenticated || !room?.id || typeof window === 'undefined') return;
-
-    const cable = createCableConsumer();
-    const sub = cable.subscriptions.create(
-      {
-        channel: 'GraphqlChannel',
-        room_id: room.id,
-      },
-      {
-        received(data: { game?: string; status?: string; move?: unknown }) {
-          console.log('Room updated via ActionCable:', data);
-          alert(`Room Update Received!\n${JSON.stringify(data, null, 2)}`);
-        },
-        connected() {
-          console.log('Connected to GraphqlChannel for room:', room.id);
-        },
-        disconnected() {
-          console.log('Disconnected from GraphqlChannel');
-        },
-      }
-    );
-
-    return () => {
-      if (sub) {
-        sub.unsubscribe();
-      }
-    };
-  }, [isAuthenticated, room?.id]);
-
-  // Control body overflow
-  useBodyOverflow(showCreateRoomModal);
-
-  const handleCreateNewRoom = async () => {
-    try {
-      await createRoom({
-        variables: {
-          input: {
-            name:
-              roomName ||
-              `Room by ${user?.username || 'User'} - ${new Date().toLocaleTimeString()}`,
-          },
-        },
-      });
-      setRoomName('');
-    } catch (err) {
-      console.error('Error creating room:', err);
+    if (isAuthenticated && !isLoading) {
+      router.push('/browse');
     }
-  };
-
-  const handleCellClick = (index: number) => {
-    if (!gameStarted || !players.X || !players.O) return;
-
-    const currentUserSymbol = user?.id === players.X.id ? 'X' : 'O';
-    const isCurrentUserTurn = currentTurn === currentUserSymbol;
-
-    if (boardState[index] === null && isCurrentUserTurn) {
-      const newBoard = [...boardState];
-      newBoard[index] = currentUserSymbol;
-      setBoardState(newBoard);
-      setCurrentTurn(currentUserSymbol === 'X' ? 'O' : 'X');
-    }
-  };
-
-  const handleLeaveRoom = () => {
-    setGameStarted(false);
-    setRoom(null);
-    setPlayers({ X: null, O: null });
-    setBoardState(Array(225).fill(null));
-    setCurrentTurn('X');
-  };
-
-  const handleCreateRoomModalClose = () => {
-    setShowCreateRoomModal(false);
-    setRoomName('');
-  };
+  }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // Game started screen
-  if (gameStarted && room && players.X && players.O) {
-    const currentUserSymbol = user?.id === players.X.id ? 'X' : 'O';
-    const isCurrentUserTurn = currentTurn === currentUserSymbol;
-
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
-        <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
-
-        <main className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          {/* Room Info */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{room.name}</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Game ID: {room.id.slice(0, 8)}...
-            </p>
-          </div>
-
-          {/* Players Info */}
-          <div className="flex gap-4 mb-8">
-            <PlayerInfo
-              player={players.X}
-              isCurrentTurn={currentTurn === 'X'}
-              isCurrentPlayer={currentUserSymbol === 'X'}
-            />
-            <div className="text-gray-600 dark:text-gray-400 font-semibold flex items-center">
-              VS
-            </div>
-            <PlayerInfo
-              player={players.O}
-              isCurrentTurn={currentTurn === 'O'}
-              isCurrentPlayer={currentUserSymbol === 'O'}
-            />
-          </div>
-
-          {/* Game Board */}
-          <GameBoard
-            boardState={boardState}
-            isCurrentUserTurn={isCurrentUserTurn}
-            onCellClick={handleCellClick}
-          />
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 justify-center mt-8">
-            <button
-              onClick={handleLeaveRoom}
-              className="px-8 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors cursor-pointer"
-            >
-              Leave Room
-            </button>
-          </div>
-        </main>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // Home screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
       <Navbar username={user?.username} isAuthenticated={isAuthenticated} onLogout={logout} />
 
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          {/* Logo */}
-          <div className="mx-auto h-24 w-24 flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 mb-8 shadow-lg">
-            <svg
-              className="h-12 w-12 text-indigo-600 dark:text-indigo-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
+              Play{' '}
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Caro
+              </span>
+              <br />
+              Online
+            </h1>
 
-          <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Caro Game
-          </h1>
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+              Challenge players worldwide in the classic 5-in-a-row strategy game.
+              Real-time multiplayer, leaderboards, and more!
+            </p>
 
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            Challenge your friends in the classic strategy game. Play online, climb the leaderboard,
-            and become a champion!
-          </p>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+              <Link
+                href="/register"
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
+              >
+                <Play className="w-6 h-6" />
+                Start Playing Free
+              </Link>
+              <Link
+                href="/login"
+                className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-300 dark:border-gray-700 rounded-lg font-semibold text-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-lg hover:shadow-xl"
+              >
+                Sign In
+              </Link>
+            </div>
 
-          {isAuthenticated ? (
-            <div className="space-y-8">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 max-w-md mx-auto">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                  Ready to Play?
-                </h2>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => setShowCreateRoomModal(true)}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Create New Room
-                  </button>
-
-                  {room && (
-                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                        Current Room:
-                      </h3>
-                      <div className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
-                        <p>
-                          <strong>ID:</strong> {room.id}
-                        </p>
-                        <p>
-                          <strong>Name:</strong> {room.name}
-                        </p>
-                        <p>
-                          <strong>Master:</strong> {room.master.username} ({room.master.email})
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <Link
-                    href="/browse"
-                    className="block w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/50 text-center"
-                  >
-                    Browse Games
-                  </Link>
-                  <Link
-                    href="/leaderboard"
-                    className="block w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/50 text-center"
-                  >
-                    View Leaderboard
-                  </Link>
-                  <Link
-                    href="/history"
-                    className="block w-full bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg cursor-pointer text-center"
-                  >
-                    View Game History
-                  </Link>
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Feature 1 */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-8 h-8 text-white" />
                 </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Real-time Multiplayer
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Play instantly with players around the world. No delays, no waiting!
+                </p>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                Sign in or create an account to start playing
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/login"
-                  className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/50"
-                >
-                  Get Started
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-block bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300"
-                >
-                  Create Account
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
 
-      <CreateRoomModal
-        isOpen={showCreateRoomModal}
-        roomName={roomName}
-        isLoading={createRoomLoading}
-        onRoomNameChange={setRoomName}
-        onCreateRoom={handleCreateNewRoom}
-        onClose={handleCreateRoomModalClose}
-      />
+              {/* Feature 2 */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Create or Join Rooms
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Host your own game room or join existing matches. It's that simple!
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Compete & Rank Up
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Climb the leaderboard and prove you're the best Caro player!
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-yellow-300 dark:bg-yellow-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* How to Play Section */}
+      <div className="py-16 bg-white/50 dark:bg-gray-800/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-12">
+            How to Play
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                1
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Sign Up</h3>
+              <p className="text-gray-600 dark:text-gray-400">Create your free account</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                2
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Find a Room</h3>
+              <p className="text-gray-600 dark:text-gray-400">Browse or create a game room</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                3
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Play</h3>
+              <p className="text-gray-600 dark:text-gray-400">Get 5 in a row to win!</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                4
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Rank Up</h3>
+              <p className="text-gray-600 dark:text-gray-400">Climb the leaderboard!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer CTA */}
+      <div className="py-16">
+        <div className="max-w-4xl mx-auto text-center px-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            Ready to Play?
+          </h2>
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+            Join thousands of players online right now!
+          </p>
+          <Link
+            href="/register"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold text-lg hover:from-indigo-500 hover:to-purple-500 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            <Play className="w-6 h-6" />
+            Get Started Now
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
