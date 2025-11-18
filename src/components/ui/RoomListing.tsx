@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { Room } from '@/types';
-import { RoomCard } from './RoomCard';
-import { Search, RefreshCw, Plus, Filter } from 'lucide-react';
+import { Search, RefreshCw, Plus, Filter, Users } from 'lucide-react';
 import { useRooms } from '@/hooks/useRooms';
 import { useJoinRoom } from '@/hooks/useJoinRoom';
 import { useRouter } from 'next/navigation';
+import { RoomCard } from './RoomCard';
 
 interface RoomListingProps {
   onCreateRoom?: () => void;
@@ -71,16 +71,12 @@ export function RoomListing({
   const handleJoinRoom = async (roomId: string) => {
     setJoiningRoomId(roomId);
     try {
-      console.log('[RoomListing] Attempting to join room:', roomId);
       const room = await joinRoom(roomId);
       
       if (room) {
-        console.log('[RoomListing] Successfully joined room, redirecting...');
-        // Redirect to game room page
         router.push(`/room/${roomId}`);
       }
     } catch (err: any) {
-      console.error('[RoomListing] Failed to join room:', err);
       alert(err.message || 'Failed to join room');
     } finally {
       setJoiningRoomId(null);
@@ -120,7 +116,7 @@ export function RoomListing({
           <button
             onClick={onCreateRoom}
             disabled={isLoading}
-            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
           >
             <Plus className="w-5 h-5" />
             Create New Room
@@ -138,7 +134,7 @@ export function RoomListing({
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer ${
                   filterStatus === status
                     ? 'bg-indigo-600 text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -168,7 +164,7 @@ export function RoomListing({
             <button
               onClick={refetch}
               disabled={isLoading}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-all disabled:opacity-50"
+              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               title="Refresh room list"
             >
               <RefreshCw
@@ -204,7 +200,7 @@ export function RoomListing({
               </p>
               <button
                 onClick={onCreateRoom}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-indigo-500/50"
+                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all inline-flex items-center gap-2 shadow-lg hover:shadow-indigo-500/50 cursor-pointer"
               >
                 <Plus className="w-5 h-5" />
                 Create First Room

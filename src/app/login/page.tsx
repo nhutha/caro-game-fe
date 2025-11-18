@@ -10,6 +10,11 @@ import { Navbar } from '@/components/ui/Navbar';
 
 interface SignInResponse {
   signInUser: {
+    user: {
+      id: string;
+      username: string;
+      email: string;
+    };
     accessToken: string;
   };
 }
@@ -25,13 +30,17 @@ export default function LoginPage() {
 
   const [signInUser, { loading: isLoading }] = useMutation<SignInResponse>(SIGN_IN_USER, {
     onCompleted: (data: SignInResponse) => {
-      if (data.signInUser.accessToken) {
-        login(data.signInUser.accessToken);
-        router.push('/'); // Redirect to home page after successful login
+      if (data.signInUser.accessToken && data.signInUser.user) {
+        login(data.signInUser.accessToken, {
+          id: data.signInUser.user.id,
+          username: data.signInUser.user.username,
+          email: data.signInUser.user.email,
+          createdAt: new Date().toISOString(),
+        });
+        router.push('/');
       }
     },
-    onError: (error: Error) => {
-      console.error('Login error:', error);
+    onError: () => {
       setError('Invalid email or password. Please try again.');
     },
   });
@@ -50,8 +59,7 @@ export default function LoginPage() {
         },
       });
     } catch (err) {
-      // Error is handled in onError callback
-      console.error('Login submission error:', err);
+      // Error handled in onError callback
     }
   };
 
@@ -124,7 +132,7 @@ export default function LoginPage() {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (

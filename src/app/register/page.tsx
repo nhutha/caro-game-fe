@@ -35,13 +35,12 @@ export default function RegisterPage() {
 
   const [registerUser, { loading: isLoading }] = useMutation<SignUpResponse>(REGISTER_USER, {
     onCompleted: (data: SignUpResponse) => {
-      if (data.registerUser.accessToken) {
-        login(data.registerUser.accessToken);
+      if (data.registerUser.accessToken && data.registerUser.user) {
+        login(data.registerUser.accessToken, data.registerUser.user);
         router.push('/browse');
       }
     },
-    onError: (error: Error) => {
-      console.error('Registration error:', error);
+    onError: () => {
       setError('Registration failed. Please try again.');
     },
   });
@@ -74,11 +73,12 @@ export default function RegisterPage() {
             username: formData.username,
             email: formData.email,
             password: formData.password,
+            passwordConfirmation: formData.confirmPassword,
           },
         },
       });
     } catch (err) {
-      console.error('Registration submission error:', err);
+      // Error handled in onError callback
     }
   };
 
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -245,7 +245,7 @@ export default function RegisterPage() {
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (

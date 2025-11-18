@@ -35,7 +35,6 @@ export function useLeaderboard(limit: number = 50): UseLeaderboardResult {
 
       setLeaderboard(result.data?.leaderboard || []);
     } catch (err) {
-      console.error('[useLeaderboard] Error fetching leaderboard:', err);
       setError(err);
     } finally {
       setLoading(false);

@@ -48,7 +48,7 @@ export default function HistoryPage() {
         {/* Back button */}
         <button
           onClick={() => router.push('/browse')}
-          className="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          className="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Browse
@@ -74,7 +74,7 @@ export default function HistoryPage() {
             </p>
             <button
               onClick={() => router.push('/browse')}
-              className="mt-6 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all"
+              className="mt-6 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all cursor-pointer"
             >
               Browse Games
             </button>

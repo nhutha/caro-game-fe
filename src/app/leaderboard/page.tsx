@@ -1,10 +1,12 @@
 'use client';
 
-import { Trophy, Medal, Award, TrendingUp, Target } from 'lucide-react';
+import { Trophy, Medal, Award, TrendingUp, Target, Crown } from 'lucide-react';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LeaderboardPage() {
   const { leaderboard, loading, error } = useLeaderboard(50);
+  const { user } = useAuth();
 
   if (loading) {
     return (
@@ -49,20 +51,60 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {leaderboard.map((player, index) => (
-                <tr key={player.id} className="border-b dark:border-gray-700">
-                  <td className="px-6 py-4">{getRankIcon(index + 1)}</td>
-                  <td className="px-6 py-4 font-semibold">{player.username}</td>
-                  <td className="px-6 py-4 text-center">{player.points}</td>
-                  <td className="px-6 py-4 text-center text-sm">
-                    <span className="text-green-600">{player.wins}</span>/
-                    <span className="text-red-600">{player.losses}</span>/
-                    <span className="text-yellow-600">{player.draws}</span>
-                  </td>
-                  <td className="px-6 py-4 text-center">{player.totalGames}</td>
-                  <td className="px-6 py-4 text-center">{player.winRate.toFixed(1)}%</td>
-                </tr>
-              ))}
+              {leaderboard.map((player, index) => {
+                const isCurrentUser = user && player.username === user.username;
+                return (
+                  <tr 
+                    key={player.id} 
+                    className={`border-b dark:border-gray-700 transition-colors ${
+                      isCurrentUser 
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-700' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <td className="px-6 py-4">{getRankIcon(index + 1)}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {isCurrentUser && (
+                          <Crown className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                        )}
+                        <span className={`font-semibold ${
+                          isCurrentUser 
+                            ? 'text-indigo-700 dark:text-indigo-300' 
+                            : 'text-gray-900 dark:text-white'
+                        }`}>
+                          {player.username}
+                        </span>
+                        {isCurrentUser && (
+                          <span className="text-xs px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full font-medium">
+                            You
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className={`px-6 py-4 text-center font-semibold ${
+                      isCurrentUser ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {player.points}
+                    </td>
+                    <td className="px-6 py-4 text-center text-sm">
+                      <span className="text-green-600 dark:text-green-400 font-medium">{player.wins}</span>/
+                      <span className="text-red-600 dark:text-red-400 font-medium">{player.losses}</span>/
+                      <span className="text-yellow-600 dark:text-yellow-400 font-medium">{player.draws}</span>
+                    </td>
+                    <td className={`px-6 py-4 text-center ${
+                      isCurrentUser ? 'text-indigo-700 dark:text-indigo-300 font-semibold' : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {player.totalGames}
+                    </td>
+                    <td className={`px-6 py-4 text-center ${
+                      isCurrentUser ? 'text-indigo-700 dark:text-indigo-300 font-semibold' : 'text-gray-900 dark:text-white'
+                    }`}>
+                      {player.winRate.toFixed(1)}%
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

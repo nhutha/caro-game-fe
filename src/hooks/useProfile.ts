@@ -53,7 +53,6 @@ export function useProfile(userId?: string): UseProfileResult {
         setGameHistory(historyResult.data?.gameHistory || []);
       }
     } catch (err) {
-      console.error('[useProfile] Error fetching profile:', err);
       setError(err);
     } finally {
       setLoading(false);

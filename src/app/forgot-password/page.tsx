@@ -16,9 +16,6 @@ export default function ForgotPasswordPage() {
     setError('');
 
     try {
-      // TODO: Implement actual password reset logic here
-      console.log('Password reset request for:', email);
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setIsEmailSent(true);
     } catch {
@@ -73,7 +70,7 @@ export default function ForgotPasswordPage() {
                       setIsEmailSent(false);
                       setEmail('');
                     }}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-purple-900 dark:text-purple-300 dark:hover:bg-purple-800"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:bg-purple-900 dark:text-purple-300 dark:hover:bg-purple-800 cursor-pointer"
                   >
                     Try again
                   </button>

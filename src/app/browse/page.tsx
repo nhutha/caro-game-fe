@@ -31,14 +31,11 @@ export default function BrowsePage() {
     try {
       const room = await createRoom(roomName);
       if (room) {
-        console.log('[BrowsePage] Room created successfully:', room);
         setIsCreateModalOpen(false);
         setRoomName('');
-        // Redirect to the room page
         router.push(`/room/${room.id}`);
       }
     } catch (err: any) {
-      console.error('[BrowsePage] Failed to create room:', err);
       alert(err.message || 'Failed to create room');
     }
   };

@@ -41,7 +41,6 @@ export function useRooms(): UseRoomsResult {
       setRooms(result.data?.rooms || []);
     } catch (err) {
       setError(err);
-      console.error('Error fetching rooms:', err);
     } finally {
       setLoading(false);
     }
@@ -56,16 +55,12 @@ export function useRooms(): UseRoomsResult {
   const handleRoomCreated = useCallback((subscriptionData: any) => {
     const roomCreatedData = subscriptionData.roomCreated;
     if (roomCreatedData) {
-      const room = roomCreatedData.room
-      console.log('[useRooms] New room created:', roomCreatedData.room);
+      const room = roomCreatedData.room;
       setRooms((prevRooms) => {
-        // Check if room already exists
         const exists = prevRooms.some((r) => r.id === room.id);
         if (exists) {
-          console.log('[useRooms] Room already exists, skipping');
           return prevRooms;
         }
-        // Add new room at the beginning
         return [room, ...prevRooms];
       });
     }
@@ -76,7 +71,6 @@ export function useRooms(): UseRoomsResult {
     const roomUpdatedData = subscriptionData.roomUpdated;
     if (roomUpdatedData) {
       const updatedRoom = roomUpdatedData.room;
-      console.log('[useRooms] Room updated:', updatedRoom);
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
           room.id === updatedRoom.id ? updatedRoom : room
@@ -89,7 +83,6 @@ export function useRooms(): UseRoomsResult {
   const handleRoomDeleted = useCallback((subscriptionData: any) => {
     const deletedRoomId = subscriptionData.roomDeleted?.id;
     if (deletedRoomId) {
-      console.log('[useRooms] Room deleted:', deletedRoomId);
       setRooms((prevRooms) =>
         prevRooms.filter((room) => room.id !== deletedRoomId)
       );
@@ -101,7 +94,6 @@ export function useRooms(): UseRoomsResult {
     query: ROOM_CREATED_SUBSCRIPTION,
     operationName: 'RoomCreated',
     onData: handleRoomCreated,
-    onError: (err) => console.error('[useRooms] Error in RoomCreated subscription:', err),
   });
 
   // Subscribe to room updated events
@@ -109,7 +101,6 @@ export function useRooms(): UseRoomsResult {
     query: ROOM_UPDATED_SUBSCRIPTION,
     operationName: 'RoomUpdated',
     onData: handleRoomUpdated,
-    onError: (err) => console.error('[useRooms] Error in RoomUpdated subscription:', err),
   });
 
   // Subscribe to room deleted events
@@ -117,7 +108,6 @@ export function useRooms(): UseRoomsResult {
     query: ROOM_DELETED_SUBSCRIPTION,
     operationName: 'RoomDeleted',
     onData: handleRoomDeleted,
-    onError: (err) => console.error('[useRooms] Error in RoomDeleted subscription:', err),
   });
 
   return {

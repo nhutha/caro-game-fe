@@ -36,9 +36,7 @@ export function useActionCableSubscription({
   }, [onError]);
 
   useEffect(() => {
-    // Skip subscription if skip is true
     if (skip) {
-      console.log(`[ActionCable] Skipping subscription for ${operationName}`);
       return;
     }
 
@@ -46,8 +44,6 @@ export function useActionCableSubscription({
     
     const subscription = cable.subscriptions.create('GraphqlChannel', {
       connected() {
-        console.log(`[ActionCable] Connected to ${operationName}`);
-        // Send subscription query
         this.perform('execute', {
           query,
           variables,
@@ -56,14 +52,11 @@ export function useActionCableSubscription({
       },
 
       disconnected() {
-        console.log(`[ActionCable] Disconnected from ${operationName}`);
+        // Connection closed
       },
 
       received(data: any) {
-        console.log(`[ActionCable] Received data for ${operationName}:`, data);
-        
         if (data.errors) {
-          console.error(`[ActionCable] Errors in ${operationName}:`, data.errors);
           if (onErrorRef.current) {
             onErrorRef.current(data.errors);
           }
@@ -73,10 +66,8 @@ export function useActionCableSubscription({
       },
     });
 
-    // Cleanup on unmount
     return () => {
-      console.log(`[ActionCable] Unsubscribing from ${operationName}`);
       subscription.unsubscribe();
     };
-  }, [query, operationName, JSON.stringify(variables), skip]); // Add skip to dependencies
+  }, [query, operationName, JSON.stringify(variables), skip]);
 }

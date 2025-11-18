@@ -4,6 +4,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  createdAt?: string;
   wins?: number;
   losses?: number;
   draws?: number;
@@ -23,6 +24,7 @@ export interface RegisterUserInput {
   username: string;
   email: string;
   password: string;
+  passwordConfirmation: string;
 }
 
 export interface SignInUserInput {

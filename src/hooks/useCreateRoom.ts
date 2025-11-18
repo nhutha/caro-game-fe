@@ -28,8 +28,6 @@ export function useCreateRoom(): UseCreateRoomResult {
       setLoading(true);
       setError(null);
 
-      console.log('[useCreateRoom] Creating room:', name);
-
       const result = await apolloClient.mutate<CreateRoomResponse>({
         mutation: CREATE_ROOM,
         variables: { 
@@ -42,13 +40,11 @@ export function useCreateRoom(): UseCreateRoomResult {
       const room = result.data?.createRoom?.room;
 
       if (room) {
-        console.log('[useCreateRoom] Successfully created room:', room);
         return room;
       }
 
       return null;
     } catch (err: any) {
-      console.error('[useCreateRoom] Error creating room:', err);
       setError(err);
       
       const errorMessage = err?.graphQLErrors?.[0]?.message || err?.message || 'Failed to create room';

@@ -1,7 +1,13 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Room } from '@/types';
-import { Users, Shield, ChevronRight, Zap } from 'lucide-react';
+import { Users, Lock } from 'lucide-react';
+import { 
+  STATUS_COLORS, 
+  AVATAR_GRADIENTS, 
+  MAX_PLAYERS 
+} from '@/lib/constants';
 
 interface RoomCardProps {
   room: Room;
@@ -11,126 +17,161 @@ interface RoomCardProps {
   isLoading?: boolean;
 }
 
-export function RoomCard({
-  room,
-  playerCount,
-  maxPlayers = 2,
-  onJoin,
-  isLoading = false,
-}: RoomCardProps) {
-  const isFull = playerCount >= maxPlayers;
-  const occupancyPercentage = (playerCount / maxPlayers) * 100;
+type RoomStatus = 'available' | 'waiting' | 'full';
 
-  const getStatusColor = () => {
-    if (isFull)
-      return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800';
-    if (playerCount === 1)
-      return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
-    return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-  };
+const CARD_BASE_CLASS = 'bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 overflow-hidden group cursor-pointer';
+const HEADER_CLASS = 'bg-gradient-to-r from-indigo-600 to-purple-600 p-4';
+const AVATAR_BASE_CLASS = 'w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm';
+const BUTTON_BASE_CLASS = 'w-full py-2.5 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2';
 
-  const getProgressColor = () => {
-    if (isFull) return 'bg-red-500';
-    if (playerCount === 1) return 'bg-yellow-500';
-    return 'bg-emerald-500';
-  };
+function PlayerAvatar({ username, type }: { username: string; type: 'master' | 'guest' }) {
+  const gradientClass = AVATAR_GRADIENTS[type];
+  const initial = username[0]?.toUpperCase() || '?';
 
-  const getButtonColor = () => {
-    if (isFull || isLoading)
-      return 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed';
-    return 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg hover:shadow-indigo-500/50';
+  return (
+    <div className={`${AVATAR_BASE_CLASS} ${gradientClass}`}>
+      {initial}
+    </div>
+  );
+}
+
+function EmptySlot() {
+  return (
+    <div className="flex items-center gap-2 opacity-50">
+      <div className={`${AVATAR_BASE_CLASS} bg-gray-300 dark:bg-gray-600`}>
+        <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          Waiting for player...
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: RoomStatus }) {
+  const labels: Record<RoomStatus, string> = {
+    full: 'Full',
+    waiting: 'Waiting',
+    available: 'Available',
   };
 
   return (
-    <div className="group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-500 dark:hover:border-indigo-400 transition-all duration-300 hover:shadow-lg dark:hover:shadow-indigo-500/20 hover:-translate-y-1">
-      {/* Background glow effect */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-indigo-500/10 to-purple-500/10" />
+    <div className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[status]}`}>
+      {labels[status]}
+    </div>
+  );
+}
 
-      {/* Content */}
-      <div className="relative p-5 z-10">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              {room.name}
-            </h3>
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 gap-2">
-              <Shield className="w-4 h-4 text-indigo-500" />
-              <span className="truncate">Master: {room.master.username}</span>
+export function RoomCard({
+  room,
+  playerCount,
+  maxPlayers = MAX_PLAYERS,
+  onJoin,
+  isLoading = false,
+}: RoomCardProps) {
+  const status: RoomStatus = useMemo(() => {
+    if (playerCount >= maxPlayers) return 'full';
+    if (playerCount === 1) return 'waiting';
+    return 'available';
+  }, [playerCount, maxPlayers]);
+
+  const isFull = status === 'full';
+  const isDisabled = isFull || isLoading;
+
+  const buttonClass = useMemo(() => {
+    if (isFull) {
+      return `${BUTTON_BASE_CLASS} bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed`;
+    }
+    if (isLoading) {
+      return `${BUTTON_BASE_CLASS} bg-indigo-400 dark:bg-indigo-600 text-white cursor-wait`;
+    }
+    return `${BUTTON_BASE_CLASS} bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-500 hover:to-purple-500 hover:shadow-lg hover:shadow-indigo-500/50 cursor-pointer`;
+  }, [isFull, isLoading]);
+
+  const handleJoinClick = () => {
+    if (!isDisabled) {
+      onJoin(room.id);
+    }
+  };
+
+  return (
+    <article className={CARD_BASE_CLASS}>
+      {/* Header */}
+      <header className={HEADER_CLASS}>
+        <h3 className="text-lg font-bold text-white truncate">
+          {room.name}
+        </h3>
+      </header>
+
+      {/* Body */}
+      <div className="p-4">
+        {/* Players */}
+        <div className="space-y-3 mb-4">
+          {/* Master */}
+          <div className="flex items-center gap-2">
+            <PlayerAvatar username={room.master.username} type="master" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {room.master.username}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Room Master</p>
             </div>
           </div>
-          <div className="flex-shrink-0 ml-2">
-            <div
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 border transition-all ${getStatusColor()}`}
-            >
-              <Users className="w-3 h-3" />
-              <span>
-                {playerCount}/{maxPlayers}
-              </span>
+
+          {/* Guest or Empty */}
+          {room.guest ? (
+            <div className="flex items-center gap-2">
+              <PlayerAvatar username={room.guest.username} type="guest" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {room.guest.username}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Guest Player</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <EmptySlot />
+          )}
         </div>
 
-        {/* Progress bar */}
-        <div className="mb-4 space-y-2">
-          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-300 ${getProgressColor()}`}
-              style={{ width: `${occupancyPercentage}%` }}
-            />
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            {isFull ? 'Room Full' : playerCount === 1 ? 'Waiting for opponent' : 'Ready to play'}
-          </p>
-        </div>
-
-        {/* Room info */}
-        <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
-          <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
-            <span className="text-gray-600 dark:text-gray-400">Room ID:</span>
-            <span className="font-mono text-gray-800 dark:text-gray-200 truncate ml-2 text-xs">
-              {room.id.slice(0, 6)}...
+        {/* Stats */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {playerCount}/{maxPlayers} Players
             </span>
           </div>
-          <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
-            <span className="text-gray-600 dark:text-gray-400">Players:</span>
-            <span
-              className={`font-bold ${
-                isFull
-                  ? 'text-red-600 dark:text-red-400'
-                  : playerCount === 1
-                    ? 'text-yellow-600 dark:text-yellow-400'
-                    : 'text-emerald-600 dark:text-emerald-400'
-              }`}
-            >
-              {playerCount}
-            </span>
-          </div>
+          <StatusBadge status={status} />
         </div>
 
-        {/* Action button */}
+        {/* Action */}
         <button
-          onClick={() => onJoin(room.id)}
-          disabled={isFull || isLoading}
-          className={`w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all duration-300 ${getButtonColor()}`}
+          onClick={handleJoinClick}
+          disabled={isDisabled}
+          className={buttonClass}
+          aria-label={isFull ? 'Room is full' : isLoading ? 'Joining room' : 'Join room'}
         >
           {isLoading ? (
             <>
-              <Zap className="w-4 h-4 animate-pulse" />
+              <div 
+                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" 
+                aria-hidden="true"
+              />
               Joining...
             </>
           ) : isFull ? (
             <>
-              <span>Room Full</span>
+              <Lock className="w-4 h-4" aria-hidden="true" />
+              Room Full
             </>
           ) : (
-            <>
-              <span>Join Game</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </>
+            'Join Room'
           )}
         </button>
       </div>
-    </div>
+    </article>
   );
 }

@@ -27,8 +27,6 @@ export function useStartGame(): UseStartGameResult {
       setLoading(true);
       setError(null);
 
-      console.log('[useStartGame] Starting game for room:', roomId);
-
       const result = await apolloClient.mutate<StartGameResponse>({
         mutation: START_GAME,
         variables: { 
@@ -41,13 +39,11 @@ export function useStartGame(): UseStartGameResult {
       const game = result.data?.startGame?.game;
 
       if (game) {
-        console.log('[useStartGame] Game started successfully:', game);
         return game;
       }
 
       return null;
     } catch (err: any) {
-      console.error('[useStartGame] Error starting game:', err);
       setError(err);
       
       const errorMessage = err?.graphQLErrors?.[0]?.message || err?.message || 'Failed to start game';

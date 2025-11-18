@@ -51,7 +51,6 @@ export default function RoomPage({ params }: RoomPageProps) {
         setRoom(roomResult.data?.room || null);
         setCurrentUser(userResult.data?.me || null);
       } catch (err: any) {
-        console.error('Error fetching data:', err);
         setError(err.message || 'Failed to load room');
       } finally {
         setLoading(false);
@@ -71,7 +70,6 @@ export default function RoomPage({ params }: RoomPageProps) {
     variables: { roomId: resolvedParams.id },
     skip: !resolvedParams.id,
     onData: (data) => {
-      console.log('Room updated subscription data:', data);
       if (data.roomUpdated?.room) {
         const previousRoom = room;
         const newRoom = data.roomUpdated.room;
@@ -83,7 +81,6 @@ export default function RoomPage({ params }: RoomPageProps) {
         // Handle different event types
         switch (eventType) {
           case 'player_joined':
-            // Show notification when a new user joins
             if (!previousRoom?.guest && newRoom.guest && updatedBy) {
               setJoinNotification(`${updatedBy.username} joined the room! 🎉`);
               setTimeout(() => setJoinNotification(null), 5000);
@@ -91,7 +88,6 @@ export default function RoomPage({ params }: RoomPageProps) {
             break;
             
           case 'player_left':
-            // Show notification when a player leaves
             if (updatedBy) {
               setJoinNotification(`${updatedBy.username} left the room`);
               setTimeout(() => setJoinNotification(null), 5000);
@@ -99,29 +95,19 @@ export default function RoomPage({ params }: RoomPageProps) {
             break;
             
           case 'game_started':
-            // Navigate to game when it starts
             if (newRoom.game?.id) {
-              console.log('Game started, navigating to game page...');
               router.push(`/game/${newRoom.game.id}`);
             }
             break;
             
           case 'room_deleted':
-            // Navigate back to browse when room is deleted
             setJoinNotification('Room has been deleted');
             setTimeout(() => {
               router.push('/browse');
             }, 2000);
             break;
-            
-          default:
-            // Generic room update
-            console.log('Room updated:', eventType);
         }
       }
-    },
-    onError: (error) => {
-      console.error('Room subscription error:', error);
     },
   });
 
@@ -131,11 +117,9 @@ export default function RoomPage({ params }: RoomPageProps) {
     try {
       const game = await startGame(room.id);
       if (game) {
-        console.log('Game started, navigating to game page...');
         router.push(`/game/${game.id}`);
       }
     } catch (err: any) {
-      console.error('Failed to start game:', err);
       alert(err.message || 'Failed to start game');
     }
   };
@@ -164,7 +148,7 @@ export default function RoomPage({ params }: RoomPageProps) {
           </p>
           <button
             onClick={() => router.push('/browse')}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all inline-flex items-center gap-2"
+            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-500 hover:to-purple-500 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Browse
@@ -195,7 +179,7 @@ export default function RoomPage({ params }: RoomPageProps) {
         {/* Back button */}
         <button
           onClick={() => router.push('/browse')}
-          className="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          className="mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Browse
@@ -311,7 +295,7 @@ export default function RoomPage({ params }: RoomPageProps) {
               <button 
                 onClick={handleStartGame}
                 disabled={startingGame}
-                className="flex-1 px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg hover:shadow-emerald-500/50 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg hover:shadow-emerald-500/50 text-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
               >
                 {startingGame ? (
                   <>
@@ -328,7 +312,7 @@ export default function RoomPage({ params }: RoomPageProps) {
             )}
             <button
               onClick={() => router.push('/browse')}
-              className="px-6 py-4 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all"
+              className="px-6 py-4 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-all cursor-pointer"
             >
               Leave Room
             </button>

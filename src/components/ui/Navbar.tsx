@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import Link from 'next/link';
-import { Gamepad2, Trophy, LogOut } from 'lucide-react';
+import { Gamepad2, Trophy, LogOut, History } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 
 interface NavbarProps {
@@ -40,6 +40,13 @@ export const Navbar: FC<NavbarProps> = ({ username, isAuthenticated, onLogout })
                 >
                   <Trophy className="w-4 h-4" />
                   Leaderboard
+                </Link>
+                <Link
+                  href="/history"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-1"
+                >
+                  <History className="w-4 h-4" />
+                  History
                 </Link>
               </>
             )}

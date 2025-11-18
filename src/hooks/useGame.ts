@@ -56,7 +56,6 @@ export function useGame(gameId?: string): UseGameResult {
 
       setGame(result.data?.game || null);
     } catch (err) {
-      console.error('[useGame] Error fetching game:', err);
       setError(err);
     } finally {
       setLoading(false);
@@ -76,8 +75,6 @@ export function useGame(gameId?: string): UseGameResult {
       setLoading(true);
       setError(null);
 
-      console.log('[useGame] Starting game for room:', roomId);
-
       const result = await apolloClient.mutate<StartGameResponse>({
         mutation: START_GAME,
         variables: { 
@@ -89,14 +86,12 @@ export function useGame(gameId?: string): UseGameResult {
 
       const newGame = result.data?.startGame?.game;
       if (newGame) {
-        console.log('[useGame] Game started:', newGame);
         setGame(newGame);
         return newGame;
       }
 
       return null;
     } catch (err: any) {
-      console.error('[useGame] Error starting game:', err);
       setError(err);
       throw new Error(err?.graphQLErrors?.[0]?.message || 'Failed to start game');
     } finally {
@@ -112,8 +107,6 @@ export function useGame(gameId?: string): UseGameResult {
       setLoading(true);
       setError(null);
 
-      console.log('[useGame] Making move:', { gameId: game.id, row, col });
-
       const result = await apolloClient.mutate<MakeMoveResponse>({
         mutation: MAKE_MOVE,
         variables: { 
@@ -127,21 +120,12 @@ export function useGame(gameId?: string): UseGameResult {
 
       const moveData = result.data?.makeMove;
       if (moveData) {
-        console.log('[useGame] Move made:', moveData);
-        
-        // Update game state
         setGame(moveData.game);
-
-        if (moveData.gameEnded) {
-          console.log('[useGame] Game ended. Winner:', moveData.winner);
-        }
-
         return true;
       }
 
       return false;
     } catch (err: any) {
-      console.error('[useGame] Error making move:', err);
       setError(err);
       throw new Error(err?.graphQLErrors?.[0]?.message || 'Failed to make move');
     } finally {
@@ -157,8 +141,6 @@ export function useGame(gameId?: string): UseGameResult {
       setLoading(true);
       setError(null);
 
-      console.log('[useGame] Forfeiting game:', game.id);
-
       const result = await apolloClient.mutate<ForfeitGameResponse>({
         mutation: FORFEIT_GAME,
         variables: { 
@@ -170,14 +152,12 @@ export function useGame(gameId?: string): UseGameResult {
 
       const forfeitData = result.data?.forfeitGame?.game;
       if (forfeitData) {
-        console.log('[useGame] Game forfeited:', forfeitData);
         setGame(forfeitData);
         return true;
       }
 
       return false;
     } catch (err: any) {
-      console.error('[useGame] Error forfeiting game:', err);
       setError(err);
       throw new Error(err?.graphQLErrors?.[0]?.message || 'Failed to forfeit game');
     } finally {
@@ -190,21 +170,7 @@ export function useGame(gameId?: string): UseGameResult {
     const gameUpdateData = subscriptionData.gameUpdated;
     if (gameUpdateData) {
       const updatedGame = gameUpdateData.game;
-      const move = gameUpdateData.move;
-      const eventType = gameUpdateData.eventType;
-
-      console.log('[useGame] Game updated:', { eventType, move, game: updatedGame });
-
       setGame(updatedGame);
-
-      // You can add toast notifications here based on eventType
-      if (eventType === 'move_made') {
-        console.log(`[useGame] ${move.user.username} placed ${move.symbol} at (${move.row}, ${move.col})`);
-      } else if (eventType === 'game_ended') {
-        console.log(`[useGame] Game ended. Winner: ${updatedGame.winner?.username || 'Draw'}`);
-      } else if (eventType === 'game_forfeited') {
-        console.log(`[useGame] Game forfeited`);
-      }
     }
   }, []);
 
@@ -214,8 +180,7 @@ export function useGame(gameId?: string): UseGameResult {
     variables: gameId ? { gameId } : undefined,
     operationName: 'GameUpdated',
     onData: handleGameUpdated,
-    onError: (err) => console.error('[useGame] Subscription error:', err),
-    skip: !gameId, // Only subscribe if gameId exists
+    skip: !gameId,
   });
 
   return {
