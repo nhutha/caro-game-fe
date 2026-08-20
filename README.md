@@ -1,36 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# caro-game-fe
 
-## Getting Started
+Next.js 16 client for a real-time Caro (Gomoku) game. Pairs with
+[caro-game-be](https://github.com/nhutha/caro-game-be).
 
-First, run the development server:
+Rooms, live play, leaderboard, and match history over GraphQL + ActionCable.
+
+## Stack
+
+| | |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| UI | React 19.2 + React Compiler |
+| Styling | Tailwind CSS 4 (CSS-first `@theme`, no config file) |
+| GraphQL | Apollo Client 4 + `graphql-ws` |
+| Real-time | `@rails/actioncable` |
+| State | RxJS |
+| Language | TypeScript 5 |
+
+## Setup
+
+Start [caro-game-be](https://github.com/nhutha/caro-game-be) first — it serves
+GraphQL and the WebSocket endpoint on port 3000.
 
 ```bash
+git clone https://github.com/nhutha/caro-game-fe
+cd caro-game-fe
+
+cp .env.example .env.local
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open **http://localhost:3001**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The `dev` script pins port **3001** on purpose: Next's default is 3000, which
+the Rails backend already occupies.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Sign in with any seeded backend account, e.g. `player_1@example.com` /
+`password123`.
 
-## Learn More
+## Layout
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                 # App Router pages: browse, game/[id], room/[id],
+│                        # leaderboard, history, login, register
+├── components/
+│   ├── game/            # GameBoard, PlayerInfo
+│   ├── modals/          # CreateRoomModal
+│   └── ui/              # Navbar, RoomCard, Avatar, ThemeSwitcher, …
+├── contexts/            # AuthContext
+├── hooks/               # useGame, useRooms, useCreateRoom, useLeaderboard,
+│                        # useActionCableSubscription, …
+├── lib/
+│   ├── apollo.ts        # Apollo Client setup
+│   ├── actioncable.ts   # ActionCable consumer
+│   ├── constants.ts     # UI tokens + API_ENDPOINTS
+│   └── graphql/         # queries, mutations, subscriptions
+└── utils/gameUtils.ts   # win detection, board helpers
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command | Does |
+|---|---|
+| `npm run dev` | Dev server on port 3001 |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier write |
+| `npm run format:check` | Prettier check |
 
-## Deploy on Vercel
+## Pointing at a different backend port
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`API_ENDPOINTS` in `src/lib/constants.ts` reads `NEXT_PUBLIC_GRAPHQL_URL` and
+`NEXT_PUBLIC_WS_URL`, and both `src/lib/apollo.ts` and `src/lib/actioncable.ts`
+consume it. So if the backend runs somewhere other than port 3000, set those two
+variables in `.env.local` and nothing else needs changing:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+NEXT_PUBLIC_GRAPHQL_URL=http://localhost:3100/graphql
+NEXT_PUBLIC_WS_URL=ws://localhost:3100/cable
+```
+
+## Benchmark tags
+
+Tags matching `bench/v*` pin an exact tree used in a published AI-coding-agent
+benchmark, so results stay reproducible as `main` moves on. Both repos are
+tagged together — check out the same tag in each.
+
+```bash
+git checkout bench/v001-tailwind4
+```
